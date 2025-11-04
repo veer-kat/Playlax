@@ -2,6 +2,7 @@
 
 import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
+import { useAudio } from '../context/AudioContext';
 
 interface Song {
   title: string;
@@ -24,9 +25,16 @@ const Spotify: React.FC<SpotifyProps> = ({
   offsetX = 250,
   offsetY = 50,
 }) => {
+  const { currentSong: globalCurrentSong, isPlaying: globalIsPlaying, playSong: globalPlaySong } = useAudio();
   const [currentSong, setCurrentSong] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Sync local state with global state
+  useEffect(() => {
+    setCurrentSong(globalCurrentSong);
+    setIsPlaying(globalIsPlaying);
+  }, [globalCurrentSong, globalIsPlaying]);
 
   const songs: Song[] = [
     {
@@ -67,6 +75,10 @@ const Spotify: React.FC<SpotifyProps> = ({
   ];
 
   const playSong = (file: string) => {
+    // Use global play function instead
+    globalPlaySong(file);
+
+    // Keep existing logic for reference
     if (currentSong === file) {
       if (isPlaying) {
         audioRef.current?.pause();
